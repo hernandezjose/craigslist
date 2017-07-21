@@ -13,7 +13,6 @@ class Listing:
     def from_url(db, url):
         results = db.search(Query().url == url)
         if len(results) > 0:
-            print("CACHED: ", url)
             return Listing(results[0])
         print("SEARCHED: ", url)
         info = get_info_from_url(url)
