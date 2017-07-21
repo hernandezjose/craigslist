@@ -1,0 +1,5 @@
+jupyter
+requests
+bs4
+tinydb
+lxml

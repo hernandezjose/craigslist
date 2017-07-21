@@ -13,6 +13,18 @@ def addr_from_maps_url(maps_url):
     elif maps_url.startswith(prefixes[1]):
         return ','.join(maps_url.split(prefixes[1])[1].split(',')[0:2])
 
+def get_stanford_time(maps_url):
+    address = addr_from_maps_url(maps_url)
+    base_url = 'https://maps.googleapis.com/maps/api/distancematrix/xml'
+    payload = {'origins': address,
+               'destinations': 'Palo+Alto+Transit+Center',
+               'mode': 'transit',
+               'key': Constants.API_KEY()}
+    resp = requests.get(base_url, params=payload)
+    soup = BeautifulSoup(resp.content, 'lxml')
+    if soup.find('text') == None:
+        return None
+    return get_time_in_mins(soup.find('text').string)
 
 def get_transit_time(maps_url):
     address = addr_from_maps_url(maps_url)
@@ -51,14 +63,20 @@ def get_time_in_mins(time_str):
         mins += int(tokens[-4]) * 60
     return mins
 
-def get_location_and_price_from_url(url):
+def get_info_from_url(url):
     time.sleep(3)
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'lxml')
-    if soup.find('p', class_='mapaddress') == None:
-        return None, None
-    if soup.find('span', class_='price') == None:
-        return None, None
-    location = soup.find('p', class_='mapaddress').find('a')['href']
-    price = soup.find('span', class_='price').string
-    return location, price
+
+    kind = url.split('craigslist.org/')[1][4:7]
+    location = soup.find('p', class_='mapaddress')
+    price = soup.find('span', class_='price')
+    available = soup.find('span', class_='housing_movein_now')
+    info = {'url': url, 'kind': kind}
+    if location:
+        info['location'] = location.find('a')['href']
+    if price:
+        info['price'] = price.string
+    if available:
+        info['available'] = available.string
+    return info
