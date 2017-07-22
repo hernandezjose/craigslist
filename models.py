@@ -25,6 +25,13 @@ class Listing:
         delta = datetime.date.today() - posted_date
         return delta.days <= max_days_old
 
+    def to_str(self):
+        s = self.info['available'] + ', ' + self.info['url'] + ', ' + self.info['price']
+        if self.info['bicycling'] and self.info['transit']:
+            s += (', bicycling ' + str(self.info['bicycling']))
+            s += (', transit ' + str(self.info['transit']))
+        return s
+
     def from_url(db, url):
         results = db.search(Query().url == url)
         if len(results) > 0:
@@ -81,4 +88,5 @@ class SearchEngine:
         Info = Query()
         infos = self.db.search(Info.bicycling.exists() & Info.transit.exists())
         listings = [Listing(info) for info in infos]
-        return [l for l in listings if l.is_nearby() and l.is_recent()]
+        relevant = [l for l in listings if l.is_nearby() and l.is_recent()]
+        return sorted(relevant, key=lambda l: l.info['transit'])
