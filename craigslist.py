@@ -1,17 +1,17 @@
 import datetime
 import time
 
-from constants import Constants
+from constants import *
 from models import *
 from tinydb import TinyDB
 
-db = TinyDB(Constants.DATABASE())
+db = TinyDB(DATABASE())
 engine = SearchEngine(db)
 
 while True:
-    with open(Constants.LOGFILE(), 'a') as log:
+    with open(LOGFILE(), 'a') as log:
         date = str(datetime.datetime.now())
         log.write(date + '\n')
         print ('\n====================', date, '====================\n')
     listings = engine.search()
-    time.sleep(Constants.PAUSE())
+    time.sleep(PAUSE())

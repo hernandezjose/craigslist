@@ -2,7 +2,7 @@ import requests
 import time
 
 from bs4 import BeautifulSoup
-from constants import Constants
+from constants import * 
 
 
 def addr_from_maps_url(maps_url):
@@ -19,7 +19,7 @@ def get_stanford_time(maps_url):
     payload = {'origins': address,
                'destinations': 'Palo+Alto+Transit+Center',
                'mode': 'transit',
-               'key': Constants.API_KEY()}
+               'key': API_KEY()}
     resp = requests.get(base_url, params=payload)
     soup = BeautifulSoup(resp.content, 'lxml')
     if soup.find('text') == None:
@@ -32,7 +32,7 @@ def get_transit_time(maps_url):
     payload = {'origins': address,
                'destinations': 'Airbnb+HQ',
                'mode': 'transit',
-               'key': Constants.API_KEY()}
+               'key': API_KEY()}
     resp = requests.get(base_url, params=payload)
     soup = BeautifulSoup(resp.content, 'lxml')
     if soup.find('text') == None:
@@ -45,7 +45,7 @@ def get_bicycling_time(maps_url):
     payload = {'origins': address,
                'destinations': 'Airbnb+HQ',
                'mode': 'bicycling',
-               'key': Constants.API_KEY()}
+               'key': API_KEY()}
     resp = requests.get(base_url, params=payload)
     soup = BeautifulSoup(resp.content, 'lxml')
     if soup.find('text') == None:
