@@ -1,8 +1,10 @@
+import datetime
 import requests
+import smtplib
 import time
 
 from bs4 import BeautifulSoup
-from constants import * 
+from constants import *
 
 
 def addr_from_maps_url(maps_url):
@@ -71,6 +73,7 @@ def get_info_from_url(url):
     kind = url.split('craigslist.org/')[1][4:7]
     location = soup.find('p', class_='mapaddress')
     price = soup.find('span', class_='price')
+    posted = soup.find('time', class_='timeago')
     available = soup.find('span', class_='housing_movein_now')
     info = {'url': url, 'kind': kind}
     if location:
@@ -79,4 +82,21 @@ def get_info_from_url(url):
         info['price'] = price.string
     if available:
         info['available'] = available.string
+    if posted:
+        info['posted'] = posted.string
     return info
+
+def send_email(subject, body):
+    tokens = list()
+    tokens.append('From: ' + FROM_EMAIL())
+    tokens.append('To: ' + TO_EMAIL())
+    tokens.append('Subject: ' + subject)
+    tokens.append('')
+    tokens.append(body)
+    msg = '\r\n'.join(tokens)
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(FROM_EMAIL(), PASSWORD())
+    server.sendmail(FROM_EMAIL(), TO_EMAIL(), msg)
+    server.quit()

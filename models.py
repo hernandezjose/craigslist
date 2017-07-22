@@ -1,4 +1,5 @@
 
+import datetime
 import requests
 
 from bs4 import BeautifulSoup
@@ -7,14 +8,28 @@ from util import *
 
 class Listing:
     def __init__(self, info):
-        # url, price, location, kind, transit, bicycling
+        # url, price, location, kind, transit, bicycling, posted, available
         self.info = info
+
+    def is_nearby(self):
+        if self.info['bicycling'] and self.info['bicycling'] <= 25:
+            return True
+        elif self.info['transit'] and self.info['transit'] <= 30:
+            return True
+        else:
+            return False
+
+    def is_recent(self, max_days_old=4):
+        tokens = [int(tok) for tok in self.info['posted'].split()[0].split('-')]
+        posted_date = datetime.date(tokens[0], tokens[1], tokens[2])
+        delta = datetime.date.today() - posted_date
+        return delta.days <= max_days_old
 
     def from_url(db, url):
         results = db.search(Query().url == url)
         if len(results) > 0:
             return Listing(results[0])
-        print("SEARCHED: ", url)
+        print("FETCHED: ", url)
         info = get_info_from_url(url)
         if 'location' in info and 'price' in info:
             info['transit'] = get_transit_time(info['location'])
@@ -31,15 +46,15 @@ class SearchEngine:
         self.base_url_apt = "https://sfbay.craigslist.org/search/apa"
         self.base_url_roo = "https://sfbay.craigslist.org/search/roo"
 
-    def search(self, start_index=0, max_listings=100):
+    def fetch(self, start_index=0, max_listings=100):
         listings, done = [], False
         while len(listings) < max_listings:
-            partial_listings = self.__search_page(start_index)
+            partial_listings = self.__fetch_page(start_index)
             start_index += len(partial_listings)
             listings += partial_listings
         return listings
 
-    def __search_page(self, start_index=0):
+    def __fetch_page(self, start_index=0):
         payload = {'search_distance': 6,
                    'postal': 94103,
                    's': start_index,
@@ -62,8 +77,8 @@ class SearchEngine:
             listings.append(listing)
         return listings
 
-    def retrieve_transit(self):
-        return self.db.search(Query().transit.test(lambda val: val and int(val) <= 30))
-
-    def retrieve_bicycling(self):
-        return self.db.search(Query().bicycling.test(lambda val: val and int(val) <= 30))
+    def search(self):
+        Info = Query()
+        infos = self.db.search(Info.bicycling.exists() & Info.transit.exists())
+        listings = [Listing(info) for info in infos]
+        return [l for l in listings if l.is_nearby() and l.is_recent()]
