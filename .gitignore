@@ -2,3 +2,4 @@ __pycache__*
 constants.py
 *.pyc
 database.json
+*.log
