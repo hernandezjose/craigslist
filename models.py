@@ -26,10 +26,12 @@ class Listing:
         return delta.days <= max_days_old
 
     def to_str(self):
-        s = self.info['available'] + ', ' + self.info['url'] + ', ' + self.info['price']
+        s = self.info['title'] + '\n' + self.info['url'] + '\n'
+        s += (self.info['price'] + ', ' + self.info['available'])
         if self.info['bicycling'] and self.info['transit']:
             s += (', bicycling ' + str(self.info['bicycling']))
             s += (', transit ' + str(self.info['transit']))
+        s += '\n'
         return s
 
     def from_url(db, url):

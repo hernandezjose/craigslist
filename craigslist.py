@@ -18,6 +18,6 @@ while True:
     listings = engine.search()
     infos = [l.to_str() for l in listings]
     print ('\n', 'Emailing ...')
-    send_email('Craigslist apartments: ' + date, '\n\n'.join(infos))
+    send_email('Craigslist apartments: ' + date, '\n'.join(infos))
     print ('\n', 'Done!', '\n')
     time.sleep(PAUSE())

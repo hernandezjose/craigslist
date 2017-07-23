@@ -71,11 +71,14 @@ def get_info_from_url(url):
     soup = BeautifulSoup(response.content, 'lxml')
 
     kind = url.split('craigslist.org/')[1][4:7]
+    title = soup.find('title')
     location = soup.find('p', class_='mapaddress')
     price = soup.find('span', class_='price')
     posted = soup.find('time', class_='timeago')
     available = soup.find('span', class_='housing_movein_now')
     info = {'url': url, 'kind': kind}
+    if title:
+        info['title'] = title.string
     if location:
         info['location'] = location.find('a')['href']
     if price:
